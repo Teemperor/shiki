@@ -10,6 +10,8 @@ static const char *Magenta = "\x1b[35m";
 static const char *Cyan = "\x1b[36m";
 
 bool hasSuffix(std::string const &Str, std::string const &Suffix) {
+  if (Suffix.empty())
+    return true;
   if (Str.length() >= Suffix.length())
     return (Str.compare(Str.length() - Suffix.length(), Suffix.length(),
                         Suffix) == 0);
@@ -30,20 +32,46 @@ bool colorize(std::string &Str, const std::string &Token, const char *Color) {
   return true;
 }
 
+struct Highlight {
+  const char *Str;
+  const char *Color;
+  const char *Suffix;
+};
+
 static void handleLine(std::string Line) {
-  static const std::vector<std::pair<const char *, const char *>> ColorCodes = {
-      {"Building CXX object", Green},
-      {"Linking CXX static library", Magenta},
-      {"Updating ", Blue},
+
+  std::regex NinjaStatus("\\[[0-9]+/[0-9]+\\]");
+  std::smatch Match;
+  if (std::regex_search(Line, Match, NinjaStatus)) {
+    colorize(Line, Match[0].str(), Yellow);
+  } else {
+    std::cout << Line << std::endl;
+    return;
+  }
+
+  static const std::vector<Highlight> ColorCodes = {
+      {"Building C object", Green, ""},
+      {"Building CXX object", Green, ""},
+      {"Linking CXX static library", Magenta, ""},
+      {"Updating ", Blue, "..."},
+      {"Building ", Cyan, "..."},
+      {"Generating ", Cyan, "..."},
+      {"Creating export file for ", Cyan, "..."},
+      {"Linking CXX executable ", Red, ""},
+      {"Linking CXX shared module", Red, ""},
   };
   const char *LastUsedColor = nullptr;
   for (auto &P : ColorCodes) {
-    if (colorize(Line, P.first, P.second)) {
-      LastUsedColor = P.second;
+    if (hasSuffix(Line, P.Suffix)) {
+      if (colorize(Line, P.Str, P.Color)) {
+        LastUsedColor = P.Color;
+      }
     }
   }
   if (LastUsedColor) {
-    if (hasSuffix(Line, ".o") || hasSuffix(Line, ".a")) {
+    if (hasSuffix(Line, ".o")
+        || hasSuffix(Line, ".a")
+           || hasSuffix(Line, "...")) {
       std::size_t StartOfLastWord = Line.size() - 1;
       for (; StartOfLastWord >= 0; StartOfLastWord--) {
         if (Line.at(StartOfLastWord) == ' ')
@@ -52,12 +80,6 @@ static void handleLine(std::string Line) {
       std::string LastWord = Line.substr(StartOfLastWord);
       colorize(Line, LastWord, LastUsedColor);
     }
-  }
-
-  std::regex NinjaStatus("\\[[0-9]+/[0-9]+\\]");
-  std::smatch Match;
-  if (std::regex_search(Line, Match, NinjaStatus)) {
-    colorize(Line, Match[0].str(), Yellow);
   }
 
   std::cout << Line << std::endl;

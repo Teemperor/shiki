@@ -4,3 +4,4 @@ project(shiki)
 set(CMAKE_CXX_STANDARD 11)
 
 add_executable(shiki main.cpp)
+install (TARGETS shiki RUNTIME DESTINATION bin)
