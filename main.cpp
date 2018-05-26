@@ -53,6 +53,7 @@ static void handleLine(std::string Line) {
       {"Building C object", Green, ""},
       {"Building CXX object", Green, ""},
       {"Linking CXX static library", Magenta, ""},
+      {"Linking CXX shared library", Magenta, ""},
       {"Updating ", Blue, "..."},
       {"Building ", Cyan, "..."},
       {"Generating ", Cyan, "..."},
@@ -69,17 +70,13 @@ static void handleLine(std::string Line) {
     }
   }
   if (LastUsedColor) {
-    if (hasSuffix(Line, ".o")
-        || hasSuffix(Line, ".a")
-           || hasSuffix(Line, "...")) {
-      std::size_t StartOfLastWord = Line.size() - 1;
-      for (; StartOfLastWord >= 0; StartOfLastWord--) {
-        if (Line.at(StartOfLastWord) == ' ')
-          break;
-      }
-      std::string LastWord = Line.substr(StartOfLastWord);
-      colorize(Line, LastWord, LastUsedColor);
+    std::size_t StartOfLastWord = Line.size() - 1;
+    for (; StartOfLastWord >= 0; StartOfLastWord--) {
+      if (Line.at(StartOfLastWord) == ' ')
+        break;
     }
+    std::string LastWord = Line.substr(StartOfLastWord);
+    colorize(Line, LastWord, LastUsedColor);
   }
 
   std::cout << Line << std::endl;
