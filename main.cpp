@@ -52,6 +52,7 @@ static void handleLine(std::string Line) {
   static const std::vector<Highlight> ColorCodes = {
       {"Building C object", Green, ""},
       {"Building CXX object", Green, ""},
+      {"CXX ", Green, ""},
       {"Linking CXX static library", Magenta, ""},
       {"Linking CXX shared library", Magenta, ""},
       {"Updating ", Blue, "..."},
@@ -60,6 +61,9 @@ static void handleLine(std::string Line) {
       {"Creating export file for ", Cyan, "..."},
       {"Linking CXX executable ", Red, ""},
       {"Linking CXX shared module", Red, ""},
+      {"COPY", Magenta, ""},
+      {"STAMP", Blue, ".stamp"},
+      {"ACTION", Red, ""},
   };
   const char *LastUsedColor = nullptr;
   for (auto &P : ColorCodes) {
